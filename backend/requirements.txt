@@ -7,3 +7,6 @@ psycopg2-binary>=2.9.6
 google-generativeai>=0.3.0
 pyjwt>=2.8.0
 email-validator>=2.0.0
+pytest
+httpx
+pytest-asyncio
