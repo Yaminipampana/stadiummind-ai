@@ -293,3 +293,107 @@ def test_emergency_evacuate(client: TestClient):
     data = response.json()
     assert data["sourceZone"] == "Sec102"
     assert len(data["recommendedPathInstructions"]) > 0
+
+def test_security_utilities():
+    from app.core.security import create_access_token, decode_access_token
+    token = create_access_token({"sub": "admin@stadiummind.ai", "role": "admin"})
+    assert isinstance(token, str)
+    assert len(token) > 0
+    payload = decode_access_token(token)
+    assert payload["sub"] == "admin@stadiummind.ai"
+    assert payload["role"] == "admin"
+
+@pytest.mark.anyio
+async def test_security_roles():
+    from app.core.security import verify_volunteer_role, verify_admin_role
+    from fastapi import HTTPException
+    
+    # Test volunteer role verification
+    vol_user = {"role": "volunteer", "email": "vol@stadiummind.ai"}
+    admin_user = {"role": "admin", "email": "admin@stadiummind.ai"}
+    regular_user = {"role": "user", "email": "user@stadiummind.ai"}
+    
+    assert await verify_volunteer_role(vol_user) == vol_user
+    assert await verify_volunteer_role(admin_user) == admin_user
+    with pytest.raises(HTTPException) as exc:
+        await verify_volunteer_role(regular_user)
+    assert exc.value.status_code == 403
+
+    # Test admin role verification
+    assert await verify_admin_role(admin_user) == admin_user
+    with pytest.raises(HTTPException) as exc:
+        await verify_admin_role(vol_user)
+    assert exc.value.status_code == 403
+    with pytest.raises(HTTPException) as exc:
+        await verify_admin_role(regular_user)
+    assert exc.value.status_code == 403
+
+@pytest.mark.anyio
+async def test_ai_service_direct():
+    from app.services.ai_service import ai_service
+    # Test different mock prompts in AI service
+    res_gate = await ai_service.generate_response("Where is Gate 2?", "session_123", "en")
+    assert "Gate" in res_gate
+    
+    res_food = await ai_service.generate_response("concession food wait time", "session_123", "en")
+    assert "Hot Dog" in res_food or "Pizza" in res_food
+    
+    res_toilet = await ai_service.generate_response("Where are the restrooms?", "session_123", "en")
+    assert "restroom" in res_toilet or "toilet" in res_toilet
+    
+    res_wheelchair = await ai_service.generate_response("I need a wheelchair", "session_123", "en")
+    assert "wheelchair" in res_wheelchair or "elevator" in res_wheelchair
+    
+    res_emergency = await ai_service.generate_response("emergency evacuation", "session_123", "en")
+    assert "evacuation" in res_emergency or "exit" in res_emergency
+    
+    # Test different languages
+    res_es = await ai_service.generate_response("Where is Gate 2?", "session_123", "es")
+    assert "puertas" in res_es.lower() or "puerta" in res_es.lower()
+    
+    res_fr = await ai_service.generate_response("Where is Gate 2?", "session_123", "fr")
+    assert "portes" in res_fr.lower() or "porte" in res_fr.lower()
+
+@pytest.mark.anyio
+async def test_ai_insights_service_direct():
+    import datetime
+    from app.services.ai.insights_service import ai_insights_service
+    from app.schemas.stadium import SimulationZoneSchema
+    
+    now_dt = datetime.datetime.now(datetime.timezone.utc)
+    
+    # Test high gate density
+    zones_gate = [
+        SimulationZoneSchema(id="z1", name="North Gate", category="gate", density=90, people=1000, lastUpdated=now_dt, xPos="10%", yPos="10%"),
+        SimulationZoneSchema(id="z2", name="South Gate", category="gate", density=40, people=400, lastUpdated=now_dt, xPos="10%", yPos="20%")
+    ]
+    insights = await ai_insights_service.generate_insights(zones_gate)
+    assert any(i.category == "gate" and "critical" in i.priority for i in insights)
+
+    # Test high food density
+    zones_food = [
+        SimulationZoneSchema(id="z3", name="Food Court", category="food", density=85, people=850, lastUpdated=now_dt, xPos="10%", yPos="10%"),
+        SimulationZoneSchema(id="z4", name="South Gate", category="gate", density=40, people=400, lastUpdated=now_dt, xPos="10%", yPos="20%")
+    ]
+    insights_food = await ai_insights_service.generate_insights(zones_food)
+    assert any(i.category == "volunteer" and "high" in i.priority for i in insights_food)
+
+def test_volunteer_report_issue_integration(client: TestClient):
+    response_tasks_before = client.get("/api/v1/volunteer/tasks")
+    tasks_before_count = len(response_tasks_before.json())
+
+    response = client.post(
+        "/api/v1/volunteer/report",
+        json={"locationName": "Section 202", "severity": "high", "description": "Water leakage"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    
+    response_tasks_after = client.get("/api/v1/volunteer/tasks")
+    tasks_after = response_tasks_after.json()
+    assert len(tasks_after) == tasks_before_count + 1
+    new_task = tasks_after[-1]
+    assert new_task["title"] == "Reported Issue: Section 202"
+    assert new_task["priority"] == "high"
+

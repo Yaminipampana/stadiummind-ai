@@ -68,5 +68,23 @@ async def update_task_status(task_id: str, payload: TaskStatusUpdatePayload = Bo
 @router.post("/volunteer/report")
 async def report_crowd_issue(payload: dict = Body(...)):
   """Logs volunteer incident telemetry."""
-  return {"success": True, "issueId": "iss_991"}
+  location = payload.get("locationName", "Unknown Location")
+  severity = payload.get("severity", "medium")
+  notes = payload.get("description", "No details provided.")
+  
+  # Create a new volunteer task dynamically
+  new_task_id = f"t{len(MOCK_TASKS) + 1}"
+  new_task = VolunteerTaskResponse(
+    id=new_task_id,
+    title=f"Reported Issue: {location}",
+    description=notes,
+    locationName=location,
+    priority=severity,
+    status="pending",
+    createdAt=datetime.datetime.now(datetime.timezone.utc),
+    updatedAt=datetime.datetime.now(datetime.timezone.utc)
+  )
+  MOCK_TASKS.append(new_task)
+  return {"success": True, "issueId": f"iss_{new_task_id}"}
+
 

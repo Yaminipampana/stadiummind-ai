@@ -11,6 +11,11 @@ export const Volunteer: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [reportSuccess, setReportSuccess] = useState(false);
 
+  // Issue Reporting States
+  const [reportLoc, setReportLoc] = useState("");
+  const [reportNotes, setReportNotes] = useState("");
+  const [reportSeverity, setReportSeverity] = useState("medium");
+
   const fetchTasks = async () => {
     setLoading(true);
     try {
@@ -29,7 +34,6 @@ export const Volunteer: React.FC = () => {
     if (!user) return;
     const res = await volunteerService.claimTask(taskId, user.id);
     if (res.data) {
-      // Refresh task lists
       fetchTasks();
     }
   };
@@ -38,6 +42,23 @@ export const Volunteer: React.FC = () => {
     const res = await volunteerService.updateTaskStatus(taskId, { status: "completed" });
     if (res.data) {
       fetchTasks();
+    }
+  };
+
+  const handleReportIssue = async () => {
+    if (!reportLoc || !reportNotes) return;
+    const res = await volunteerService.reportCrowdIssue({
+      locationName: reportLoc,
+      description: reportNotes,
+      severity: reportSeverity,
+    });
+    if (res.data && res.data.success) {
+      setReportSuccess(true);
+      setReportLoc("");
+      setReportNotes("");
+      setReportSeverity("medium");
+      fetchTasks();
+      setTimeout(() => setReportSuccess(false), 3000);
     }
   };
 
@@ -87,7 +108,11 @@ export const Volunteer: React.FC = () => {
                         <div>
                           <div className="flex gap-2 items-center">
                             <span className={`text-xs uppercase font-extrabold px-1.5 py-0.5 rounded ${
-                              task.priority === "critical" ? "bg-brand-rose/20 text-brand-rose" : "bg-brand-gold/20 text-brand-gold"
+                              task.priority === "critical"
+                                ? "bg-brand-rose/20 text-brand-rose"
+                                : task.priority === "high"
+                                ? "bg-orange-500/20 text-orange-500"
+                                : "bg-brand-gold/20 text-brand-gold"
                             }`}>
                               {task.priority}
                             </span>
@@ -133,15 +158,22 @@ export const Volunteer: React.FC = () => {
               <input
                 type="text"
                 placeholder="e.g., Gate 4 Restrooms"
+                value={reportLoc}
+                onChange={(e) => setReportLoc(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 bg-white border border-light-border dark:bg-dark-bg dark:border-dark-border focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Severity Level</label>
-              <select className="w-full rounded-lg px-3 py-2 bg-white border border-light-border dark:bg-dark-bg dark:border-dark-border focus:outline-none">
+              <select
+                value={reportSeverity}
+                onChange={(e) => setReportSeverity(e.target.value)}
+                className="w-full rounded-lg px-3 py-2 bg-white border border-light-border dark:bg-dark-bg dark:border-dark-border focus:outline-none text-light-text dark:text-dark-text"
+              >
                 <option value="low">Low - Clean up required</option>
                 <option value="medium">Medium - Congestion block</option>
                 <option value="high">High - Physical support needed</option>
+                <option value="critical">Critical - Safety hazard</option>
               </select>
             </div>
             <div>
@@ -149,16 +181,16 @@ export const Volunteer: React.FC = () => {
               <textarea
                 rows={3}
                 placeholder="Explain the situation..."
+                value={reportNotes}
+                onChange={(e) => setReportNotes(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 bg-white border border-light-border dark:bg-dark-bg dark:border-dark-border focus:outline-none"
               />
             </div>
             <Button
               variant="warning"
               fullWidth
-              onClick={() => {
-                setReportSuccess(true);
-                setTimeout(() => setReportSuccess(false), 3000);
-              }}
+              onClick={handleReportIssue}
+              disabled={!reportLoc || !reportNotes}
             >
               Submit Flag
             </Button>
