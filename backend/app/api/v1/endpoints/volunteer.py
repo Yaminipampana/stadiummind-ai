@@ -13,8 +13,8 @@ MOCK_TASKS = [
     locationName="Level 1 Corridor, Sec 102",
     priority="medium",
     status="pending",
-    createdAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=10),
-    updatedAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=10),
+    createdAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=10),
+    updatedAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=10),
   ),
   VolunteerTaskResponse(
     id="t2",
@@ -23,8 +23,8 @@ MOCK_TASKS = [
     locationName="Outer Plaza, West Gate 4",
     priority="high",
     status="pending",
-    createdAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=5),
-    updatedAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=5),
+    createdAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=5),
+    updatedAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=5),
   ),
   VolunteerTaskResponse(
     id="t3",
@@ -34,8 +34,8 @@ MOCK_TASKS = [
     priority="critical",
     status="in-progress",
     assignedToId="usr_volunteer_1",
-    createdAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=15),
-    updatedAt=datetime.datetime.utcnow() - datetime.timedelta(minutes=12),
+    createdAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=15),
+    updatedAt=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=12),
   )
 ]
 
@@ -51,7 +51,7 @@ async def claim_task(task_id: str, payload: TaskClaimRequest = Body(...)):
     if task.id == task_id:
       task.status = "in-progress"
       task.assignedToId = payload.volunteer_id
-      task.updatedAt = datetime.datetime.utcnow()
+      task.updatedAt = datetime.datetime.now(datetime.timezone.utc)
       return task
   return MOCK_TASKS[0]
 
@@ -61,7 +61,7 @@ async def update_task_status(task_id: str, payload: TaskStatusUpdatePayload = Bo
   for task in MOCK_TASKS:
     if task.id == task_id:
       task.status = payload.status
-      task.updatedAt = datetime.datetime.utcnow()
+      task.updatedAt = datetime.datetime.now(datetime.timezone.utc)
       return task
   return MOCK_TASKS[0]
 
@@ -69,3 +69,4 @@ async def update_task_status(task_id: str, payload: TaskStatusUpdatePayload = Bo
 async def report_crowd_issue(payload: dict = Body(...)):
   """Logs volunteer incident telemetry."""
   return {"success": True, "issueId": "iss_991"}
+

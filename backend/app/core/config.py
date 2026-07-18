@@ -1,5 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
   PROJECT_NAME: str = "StadiumMind AI"
@@ -32,7 +32,6 @@ class Settings(BaseSettings):
   ALGORITHM: str = "HS256"
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day expiration
   
-  class Config:
-    case_sensitive = True
+  model_config = SettingsConfigDict(case_sensitive=True)
 
 settings = Settings()

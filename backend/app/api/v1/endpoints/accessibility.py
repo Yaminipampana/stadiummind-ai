@@ -27,7 +27,7 @@ async def request_wheelchair_assistance(payload: WheelchairRequestPayload = Body
     userPhone=payload.contactPhone,
     status="requested",
     assignedVolunteerId=None,
-    createdAt=datetime.datetime.utcnow()
+    createdAt=datetime.datetime.now(datetime.timezone.utc)
   )
 
 @router.get("/accessibility/wheelchair-request/{request_id}", response_model=WheelchairRequestResponse)
@@ -39,5 +39,5 @@ async def get_wheelchair_status(request_id: str):
     userPhone="+15551234",
     status="dispatched",
     assignedVolunteerId="usr_volunteer_12",
-    createdAt=datetime.datetime.utcnow()
+    createdAt=datetime.datetime.now(datetime.timezone.utc)
   )

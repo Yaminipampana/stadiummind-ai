@@ -81,19 +81,18 @@ def compute_shortest_path(source_id: str, dest_id: str, accessible_only: bool = 
     if source_id not in poi_map or dest_id not in poi_map:
         return None
         
-    # Heap entry format: (accumulated_distance, current_node, path_history)
-    queue = [(0.0, source_id, [source_id])]
-    visited = set()
+    dist_map = {source_id: 0.0}
+    prev = {}
+    queue = [(0.0, source_id)]
     
     while queue:
-        dist, curr, path = heapq.heappop(queue)
-        
-        if curr in visited:
-            continue
-        visited.add(curr)
+        dist, curr = heapq.heappop(queue)
         
         if curr == dest_id:
-            return path, dist
+            break
+            
+        if dist > dist_map.get(curr, float('inf')):
+            continue
             
         neighbors = EDGES.get(curr, [])
         for neighbor in neighbors:
@@ -118,9 +117,24 @@ def compute_shortest_path(source_id: str, dest_id: str, accessible_only: bool = 
                         continue  # block stairs routes
                     seg_dist += 45.0  # 45 meter delay penalty equivalent for stairs climbs
                     
-            heapq.heappush(queue, (dist + seg_dist, neighbor, path + [neighbor]))
-            
-    return None
+            old_dist = dist_map.get(neighbor, float('inf'))
+            new_dist = dist + seg_dist
+            if new_dist < old_dist:
+                dist_map[neighbor] = new_dist
+                prev[neighbor] = curr
+                heapq.heappush(queue, (new_dist, neighbor))
+                
+    if dest_id not in dist_map:
+        return None
+        
+    path = []
+    curr = dest_id
+    while curr is not None:
+        path.append(curr)
+        curr = prev.get(curr)
+    path.reverse()
+    
+    return path, dist_map[dest_id]
 
 @router.get("/navigation/pois", response_model=list[POISchema])
 async def get_pois(type: str | None = None):

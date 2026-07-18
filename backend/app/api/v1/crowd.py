@@ -1,4 +1,4 @@
-// backend/app/api/v1/crowd.py
+# backend/app/api/v1/crowd.py
 from fastapi import APIRouter
 from pydantic import BaseModel
 import random
@@ -28,6 +28,6 @@ def generate_mock_points(num: int = 50) -> list[CrowdPoint]:
 @router.get("/crowd", response_model=CrowdResponse)
 async def get_crowd_data():
     """Return simulated crowd density points with a timestamp."""
-    timestamp = datetime.datetime.utcnow().isoformat() + "Z"
+    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z"
     points = generate_mock_points(100)
     return CrowdResponse(timestamp=timestamp, points=points)

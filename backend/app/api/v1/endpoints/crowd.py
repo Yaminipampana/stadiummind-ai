@@ -37,7 +37,7 @@ async def get_crowd_statistics():
   ]
 
   return CrowdStatsResponse(
-    timestamp=datetime.datetime.utcnow(),
+    timestamp=datetime.datetime.now(datetime.timezone.utc),
     totalAttendance=random.randint(45000, 52000),
     overallDensityIndex=random.randint(65, 82),
     heatpoints=heatpoints,
@@ -61,7 +61,7 @@ async def get_crowd_insights():
         type="warning",
         title="Gate 4 Overhead Traffic",
         message=f"West Gate 4 throughput rate ({gate4_load} p/min) exceeds recommended safety boundaries. Instruct safety crews to route overflow towards North Gate 1.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
   else:
@@ -71,7 +71,7 @@ async def get_crowd_insights():
         type="success",
         title="Gate Flow Operations Normal",
         message="All major access points report clear throughput flow rates within comfortable parameters.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
 
@@ -83,7 +83,7 @@ async def get_crowd_insights():
         type="warning",
         title="Section 108 Density Spike",
         message=f"Section 108 telemetry reports dynamic occupancy index of {sec108_density}%. Direct nearby volunteer marshals to manage corridor entry points.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
   else:
@@ -93,7 +93,7 @@ async def get_crowd_insights():
         type="info",
         title="Section Occupancy Uniform",
         message="No local spectator sections currently trigger structural bottleneck alarms.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
 
@@ -105,7 +105,7 @@ async def get_crowd_insights():
         type="recommendation",
         title="Concession Stand Optimization",
         message=f"Level 1 food court lines estimate wait times at {concession_wait} minutes. Broadcast push notifications suggesting Level 2 stalls to relieve queues.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
   else:
@@ -115,7 +115,7 @@ async def get_crowd_insights():
         type="info",
         title="Concession Queues Comfortable",
         message=f"Average transaction queues represent comfortable delays of {concession_wait} minutes.",
-        timestamp=datetime.datetime.utcnow()
+        timestamp=datetime.datetime.now(datetime.timezone.utc)
       )
     )
 
@@ -126,7 +126,7 @@ async def get_crowd_insights():
       type="success",
       title="Emergency Access Confirmed Clear",
       message="AI pathing models confirm step-free emergency lanes and medical room entrances are entirely free of static crowd congestion.",
-      timestamp=datetime.datetime.utcnow()
+      timestamp=datetime.datetime.now(datetime.timezone.utc)
     )
   )
 
@@ -167,7 +167,7 @@ async def get_crowd_simulation():
         category=rz["category"],
         density=density,
         people=people,
-        lastUpdated=datetime.datetime.utcnow(),
+        lastUpdated=datetime.datetime.now(datetime.timezone.utc),
         xPos=rz["xPos"],
         yPos=rz["yPos"]
       )
@@ -212,7 +212,7 @@ async def get_simulation_insights():
         category=rz["category"],
         density=density,
         people=people,
-        lastUpdated=datetime.datetime.utcnow(),
+        lastUpdated=datetime.datetime.now(datetime.timezone.utc),
         xPos=rz["xPos"],
         yPos=rz["yPos"]
       )

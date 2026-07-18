@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional, Any
 
@@ -44,8 +44,7 @@ class POISchema(BaseModel):
   isAccessible: bool
   status: str
 
-  class Config:
-    from_attributes = True
+  model_config = ConfigDict(from_attributes=True)
 
 class RouteRequest(BaseModel):
   source_id: str
@@ -131,8 +130,7 @@ class WheelchairRequestResponse(BaseModel):
   assignedVolunteerId: Optional[str] = None
   createdAt: datetime
 
-  class Config:
-    populate_by_name = True
+  model_config = ConfigDict(populate_by_name=True)
 
 class AccessibilityFacility(BaseModel):
   id: str

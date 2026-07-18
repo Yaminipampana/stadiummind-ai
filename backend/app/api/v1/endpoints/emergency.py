@@ -13,7 +13,7 @@ async def trigger_sos(payload: SOSRequestPayload = Body(...)):
     type=payload.type,
     locationDescription=payload.locationDescription,
     status="active",
-    createdAt=datetime.datetime.utcnow()
+    createdAt=datetime.datetime.now(datetime.timezone.utc)
   )
 
 @router.get("/emergency/evacuate/{current_zone}")

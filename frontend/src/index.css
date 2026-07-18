@@ -25,3 +25,25 @@
   }
 }
 
+/* High Contrast Mode styling overrides */
+.high-contrast {
+  filter: contrast(1.4) !important;
+}
+.high-contrast body, 
+.high-contrast div, 
+.high-contrast section, 
+.high-contrast header, 
+.high-contrast nav, 
+.high-contrast main,
+.high-contrast button,
+.high-contrast a,
+.high-contrast p,
+.high-contrast span,
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4 {
+  border-color: #ffffff !important;
+}
+
+

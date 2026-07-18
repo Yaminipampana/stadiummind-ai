@@ -11,7 +11,7 @@ class User(Base):
   email = Column(String, unique=True, index=True, nullable=False)
   role = Column(String, default="user") # user, volunteer, admin
   hashed_password = Column(String, nullable=False)
-  created_at = Column(DateTime, default=datetime.datetime.utcnow)
+  created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
   tasks = relationship("VolunteerTask", back_populates="assigned_to")
 
@@ -22,7 +22,7 @@ class ChatMessage(Base):
   session_id = Column(String, index=True, nullable=False)
   role = Column(String, nullable=False) # user, assistant
   content = Column(String, nullable=False)
-  timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+  timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class POI(Base):
   __tablename__ = "pois"
@@ -45,7 +45,7 @@ class QueueMetric(Base):
   predicted_15min = Column(Integer, default=0)
   predicted_30min = Column(Integer, default=0)
   trend = Column(String, default="stable") # rising, stable, falling
-  timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+  timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class VolunteerTask(Base):
   __tablename__ = "volunteer_tasks"
@@ -57,8 +57,8 @@ class VolunteerTask(Base):
   priority = Column(String, default="medium") # low, medium, high, critical
   status = Column(String, default="pending") # pending, in-progress, completed
   assigned_to_id = Column(String, ForeignKey("users.id"), nullable=True)
-  created_at = Column(DateTime, default=datetime.datetime.utcnow)
-  updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+  created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+  updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc))
 
   assigned_to = relationship("User", back_populates="tasks")
 
@@ -70,7 +70,7 @@ class WheelchairRequest(Base):
   user_phone = Column(String, nullable=False)
   status = Column(String, default="requested") # requested, dispatched, completed
   assigned_volunteer_id = Column(String, ForeignKey("users.id"), nullable=True)
-  created_at = Column(DateTime, default=datetime.datetime.utcnow)
+  created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class SustainabilityLog(Base):
   __tablename__ = "sustainability_logs"
@@ -80,7 +80,7 @@ class SustainabilityLog(Base):
   item_type = Column(String, nullable=False) # bottle, can, cardboard
   count = Column(Integer, default=1)
   points_credited = Column(Integer, default=0)
-  timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+  timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 class SOSSignal(Base):
   __tablename__ = "sos_signals"
@@ -90,4 +90,4 @@ class SOSSignal(Base):
   location_desc = Column(String, nullable=False)
   contact_phone = Column(String, nullable=True)
   status = Column(String, default="active") # active, resolved
-  created_at = Column(DateTime, default=datetime.datetime.utcnow)
+  created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEye, FiVolume2, FiMap, FiSmile, FiAlertCircle } from "react-icons/fi";
 import { Card, CardHeader, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -6,12 +7,23 @@ import { Input } from "../components/ui/Input";
 import { accessibilityService, AccessibilityIncident, WheelchairRequest } from "../services/accessibilityService";
 
 export const Accessibility: React.FC = () => {
+  const navigate = useNavigate();
   const [facilities, setFacilities] = useState<AccessibilityIncident[]>([]);
   const [loading, setLoading] = useState(true);
   const [userPhone, setUserPhone] = useState("");
   const [userLoc, setUserLoc] = useState("");
   const [reqNotes, setReqNotes] = useState("");
   const [activeRequest, setActiveRequest] = useState<WheelchairRequest | null>(null);
+
+  // Accessibility State
+  const [highContrast, setHighContrast] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("high-contrast");
+    }
+    return false;
+  });
+  const [audioDescription, setAudioDescription] = useState(false);
+  const [filterType, setFilterType] = useState<string | null>(null);
 
   const fetchFacilities = async () => {
     setLoading(true);
@@ -27,6 +39,50 @@ export const Accessibility: React.FC = () => {
     fetchFacilities();
   }, []);
 
+  const speakText = (text: string) => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const toggleHighContrast = () => {
+    if (typeof window !== "undefined") {
+      const root = document.documentElement;
+      if (root.classList.contains("high-contrast")) {
+        root.classList.remove("high-contrast");
+        setHighContrast(false);
+        speakText("High contrast mode disabled");
+      } else {
+        root.classList.add("high-contrast");
+        setHighContrast(true);
+        speakText("High contrast mode enabled");
+      }
+    }
+  };
+
+  const toggleAudioDescription = () => {
+    if (audioDescription) {
+      setAudioDescription(false);
+      speakText("Audio description disabled");
+    } else {
+      setAudioDescription(true);
+      speakText("Audio description enabled. Live commentator narration is now active.");
+    }
+  };
+
+  const handleSensoryStatus = () => {
+    setFilterType(filterType === "sensory-room" ? null : "sensory-room");
+    const quietRoomText = "Showing sensory quiet room status. Quiet Room A is operational. Quiet Room B is currently closed for maintenance.";
+    speakText(quietRoomText);
+  };
+
+  const handleWheelchairMap = () => {
+    speakText("Redirecting to interactive map showing accessible points of interest.");
+    navigate("/map?filter=accessible");
+  };
+
   const handleRequestAssistance = async () => {
     if (!userPhone || !userLoc) return;
     const res = await accessibilityService.requestWheelchairAssistance({
@@ -36,8 +92,13 @@ export const Accessibility: React.FC = () => {
     });
     if (res.data) {
       setActiveRequest(res.data);
+      speakText("Assistance request submitted successfully. A volunteer will contact you shortly.");
     }
   };
+
+  const displayedFacilities = filterType
+    ? facilities.filter((f) => f.type === filterType)
+    : facilities;
 
   return (
     <div className="container mx-auto px-4 py-8 text-light-text dark:text-dark-text transition-colors">
@@ -56,31 +117,64 @@ export const Accessibility: React.FC = () => {
               <h3 className="font-bold text-lg">Adaptive Services & Settings</h3>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button className="flex items-center gap-3 p-4 border border-light-border dark:border-dark-border rounded-xl hover:bg-brand-blue/10 text-left transition-colors">
-                <FiVolume2 size={24} className="text-brand-blue" />
+              <button
+                onClick={toggleAudioDescription}
+                aria-pressed={audioDescription}
+                className={`flex items-center gap-3 p-4 border rounded-xl text-left transition-colors ${
+                  audioDescription
+                    ? "border-brand-emerald bg-brand-emerald/10"
+                    : "border-light-border dark:border-dark-border hover:bg-brand-blue/10"
+                }`}
+              >
+                <FiVolume2 size={24} className={audioDescription ? "text-brand-emerald" : "text-brand-blue"} />
                 <div>
-                  <h4 className="font-bold text-sm">Audio Description</h4>
+                  <h4 className="font-bold text-sm">
+                    Audio Description {audioDescription && <span className="text-xs text-brand-emerald font-semibold ml-1">(Active)</span>}
+                  </h4>
                   <p className="text-xs text-light-muted dark:text-dark-muted">Turn on live match commentator narration.</p>
                 </div>
               </button>
 
-              <button className="flex items-center gap-3 p-4 border border-light-border dark:border-dark-border rounded-xl hover:bg-brand-blue/10 text-left transition-colors">
-                <FiEye size={24} className="text-brand-blue" />
+              <button
+                onClick={toggleHighContrast}
+                aria-pressed={highContrast}
+                className={`flex items-center gap-3 p-4 border rounded-xl text-left transition-colors ${
+                  highContrast
+                    ? "border-brand-emerald bg-brand-emerald/10"
+                    : "border-light-border dark:border-dark-border hover:bg-brand-blue/10"
+                }`}
+              >
+                <FiEye size={24} className={highContrast ? "text-brand-emerald" : "text-brand-blue"} />
                 <div>
-                  <h4 className="font-bold text-sm">High Contrast Mode</h4>
+                  <h4 className="font-bold text-sm">
+                    High Contrast Mode {highContrast && <span className="text-xs text-brand-emerald font-semibold ml-1">(Active)</span>}
+                  </h4>
                   <p className="text-xs text-light-muted dark:text-dark-muted">Configure color palette for maximum visibility.</p>
                 </div>
               </button>
 
-              <button className="flex items-center gap-3 p-4 border border-light-border dark:border-dark-border rounded-xl hover:bg-brand-blue/10 text-left transition-colors">
-                <FiSmile size={24} className="text-brand-blue" />
+              <button
+                onClick={handleSensoryStatus}
+                aria-pressed={filterType === "sensory-room"}
+                className={`flex items-center gap-3 p-4 border rounded-xl text-left transition-colors ${
+                  filterType === "sensory-room"
+                    ? "border-brand-emerald bg-brand-emerald/10"
+                    : "border-light-border dark:border-dark-border hover:bg-brand-blue/10"
+                }`}
+              >
+                <FiSmile size={24} className={filterType === "sensory-room" ? "text-brand-emerald" : "text-brand-blue"} />
                 <div>
-                  <h4 className="font-bold text-sm">Sensory Room Status</h4>
+                  <h4 className="font-bold text-sm">
+                    Sensory Room Status {filterType === "sensory-room" && <span className="text-xs text-brand-emerald font-semibold ml-1">(Filtered)</span>}
+                  </h4>
                   <p className="text-xs text-light-muted dark:text-dark-muted">Check location and noise levels of quiet rooms.</p>
                 </div>
               </button>
 
-              <button className="flex items-center gap-3 p-4 border border-light-border dark:border-dark-border rounded-xl hover:bg-brand-blue/10 text-left transition-colors">
+              <button
+                onClick={handleWheelchairMap}
+                className="flex items-center gap-3 p-4 border border-light-border dark:border-dark-border rounded-xl hover:bg-brand-blue/10 text-left transition-colors"
+              >
                 <FiMap size={24} className="text-brand-blue" />
                 <div>
                   <h4 className="font-bold text-sm">Wheelchair Map POIs</h4>
@@ -92,15 +186,20 @@ export const Accessibility: React.FC = () => {
 
           {/* Infrastructure updates */}
           <Card>
-            <CardHeader>
+            <CardHeader className="flex justify-between items-center flex-row">
               <h3 className="font-bold text-lg">Infrastructure Health Monitor</h3>
+              {filterType && (
+                <Button size="sm" variant="outline" onClick={() => setFilterType(null)}>
+                  Show All Facilities
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               {loading ? (
                 <p>Retrieving health metrics...</p>
               ) : (
                 <div className="space-y-3">
-                  {facilities.map((fac) => (
+                  {displayedFacilities.map((fac) => (
                     <div
                       key={fac.id}
                       className="flex justify-between items-center p-3 border border-light-border dark:border-dark-border rounded-lg"
@@ -108,6 +207,9 @@ export const Accessibility: React.FC = () => {
                       <div>
                         <h4 className="font-bold text-sm">{fac.facilityName}</h4>
                         <p className="text-xs text-light-muted dark:text-dark-muted capitalize">Type: {fac.type}</p>
+                        {fac.alternativeRouteInstructions && (
+                          <p className="text-xs text-brand-rose mt-1 italic">{fac.alternativeRouteInstructions}</p>
+                        )}
                       </div>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                         fac.status === "operational" ? "bg-brand-emerald/10 text-brand-emerald" : "bg-brand-rose/10 text-brand-rose"
@@ -116,6 +218,9 @@ export const Accessibility: React.FC = () => {
                       </span>
                     </div>
                   ))}
+                  {displayedFacilities.length === 0 && (
+                    <p className="text-sm text-light-muted dark:text-dark-muted">No facilities found matching filter.</p>
+                  )}
                 </div>
               )}
             </CardContent>

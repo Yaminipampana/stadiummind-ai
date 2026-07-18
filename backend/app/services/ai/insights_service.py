@@ -63,7 +63,7 @@ class AIInsightsService:
                             category=pi.get("category", "congestion"),
                             priority=pi.get("priority", "medium"),
                             confidenceScore=float(pi.get("confidenceScore", 0.85)),
-                            timestamp=datetime.datetime.utcnow()
+                            timestamp=datetime.datetime.now(datetime.timezone.utc)
                         )
                     )
                 return insights
@@ -87,7 +87,7 @@ class AIInsightsService:
                         category="gate",
                         priority="critical",
                         confidenceScore=0.94,
-                        timestamp=datetime.datetime.utcnow()
+                        timestamp=datetime.datetime.now(datetime.timezone.utc)
                     )
                 )
         else:
@@ -100,7 +100,7 @@ class AIInsightsService:
                     category="gate",
                     priority="low",
                     confidenceScore=0.88,
-                    timestamp=datetime.datetime.utcnow()
+                    timestamp=datetime.datetime.now(datetime.timezone.utc)
                 )
             )
 
@@ -117,7 +117,7 @@ class AIInsightsService:
                         category="volunteer",
                         priority="high",
                         confidenceScore=0.91,
-                        timestamp=datetime.datetime.utcnow()
+                        timestamp=datetime.datetime.now(datetime.timezone.utc)
                     )
                 )
 
@@ -132,7 +132,7 @@ class AIInsightsService:
                     category="security",
                     priority="high",
                     confidenceScore=0.89,
-                    timestamp=datetime.datetime.utcnow()
+                    timestamp=datetime.datetime.now(datetime.timezone.utc)
                 )
             )
 
@@ -149,7 +149,7 @@ class AIInsightsService:
                     category="redirection",
                     priority="critical",
                     confidenceScore=0.95,
-                    timestamp=datetime.datetime.utcnow()
+                    timestamp=datetime.datetime.now(datetime.timezone.utc)
                 )
             )
 
@@ -164,7 +164,7 @@ class AIInsightsService:
                     category="route",
                     priority="medium",
                     confidenceScore=0.82,
-                    timestamp=datetime.datetime.utcnow()
+                    timestamp=datetime.datetime.now(datetime.timezone.utc)
                 )
             )
 
@@ -178,7 +178,7 @@ class AIInsightsService:
                     category="congestion",
                     priority="low",
                     confidenceScore=0.90,
-                    timestamp=datetime.datetime.utcnow()
+                    timestamp=datetime.datetime.now(datetime.timezone.utc)
                 )
             )
             
